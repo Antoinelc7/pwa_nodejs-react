@@ -1,24 +1,27 @@
 const express = require('express');
 const cors = require('cors');
+const hostname = '0.0.0.0';
+const port = 3000;
+const server = express();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+server.use(cors());
+server.use(express.json());
+server.use(express.urlencoded());
 
-app.get('/score', (req, res) => {
-  const score = '2 - 1';
-  res.json({ score });
+let score = { home: 0, away: 0 };
+
+setInterval(() => {
+  score.home++;
+}, 10000);
+
+setInterval(() => {
+  score.away++;
+}, 30000);
+
+server.get('/score', (req, res) => {
+  res.json(score);
 });
 
-app.post('/score', (req, res) => {
-  const newScore = req.body.score;
-  res.json({ score: newScore });
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
 });
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Error with score server');
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
