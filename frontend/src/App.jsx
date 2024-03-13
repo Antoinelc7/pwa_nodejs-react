@@ -6,16 +6,26 @@ function App() {
 
   useEffect(() => {
     const fetchScore = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/score');
-        setScore(response.data.score);
-      } catch (error) {
-        if (!navigator.onLine) {
-          const cachedData = await caches.match('http://localhost:3000/score');
-          if (cachedData) {
-            const data = await cachedData.json();
-            setScore(data.score);
-          }
+      if (!navigator.onLine) {
+        // If the user is offline, get the score from the cache
+        const cache = await caches.open('my-cache');
+        const cachedResponse = await cache.match(new Request('/score'));
+        if (cachedResponse) {
+          // If there's a score in the cache, use it
+          const cachedScore = await cachedResponse.text();
+          setScore(Number(cachedScore));
+        }
+      } else {
+        try {
+          const response = await axios.get('http://localhost:3000/score');
+          setScore(response.data.score);
+    
+          // Store the score in the cache
+          const cache = await caches.open('my-cache');
+          const responseToCache = new Response(String(response.data.score));
+          await cache.put(new Request('/score'), responseToCache);
+        } catch (error) {
+          console.error('Failed to fetch score:', error);
         }
       }
     };
@@ -26,7 +36,7 @@ function App() {
   return (
     <div>
       <h1>Match Score</h1>
-      {score && <p>{score}</p>}
+      <p>{score}</p>
     </div>
   );
 }

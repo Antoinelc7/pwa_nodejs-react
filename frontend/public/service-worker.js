@@ -1,5 +1,5 @@
 const CACHE_NAME = 'version-1';
-const urlsToCache = ['index.html', 'offline.html'];
+const urlsToCache = ['/', 'index.html'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -32,11 +32,7 @@ self.addEventListener('fetch', (event) => {
               });
             return res;
           })
-          .catch(() => {
-            return new Response(JSON.stringify({ score: 0 }), {
-              headers: { 'Content-Type': 'application/json' }
-            });
-          });
+          .catch(() => new Response('You are offline'));
       })
   );
 });
